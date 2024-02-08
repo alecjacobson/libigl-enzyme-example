@@ -1,6 +1,13 @@
 cmake_minimum_required(VERSION 3.16)
 project(example)
 
+list(PREPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake)
+
+# Libigl
+include(libigl)
+# Enable the target igl::glfw
+igl_include(glfw)
+
 if(NOT DEFINED LLVM_DIR AND APPLE)
   # Use CMake script to find brew llvm's prefix
   execute_process(COMMAND brew --prefix llvm OUTPUT_VARIABLE BREW_LLVM_PREFIX OUTPUT_STRIP_TRAILING_WHITESPACE)
@@ -49,4 +56,6 @@ set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${ENZYME_PLUGIN_FLAG}")
 
 
 # add the executable
-add_executable(example example.cpp)
+add_executable(${PROJECT_NAME} example.cpp)
+# Link igl (and the glfw module) to your project
+target_link_libraries(${PROJECT_NAME} PUBLIC igl::glfw)
