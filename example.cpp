@@ -105,8 +105,8 @@ static double total_surface_area( const Eigen::MatrixXd * __restrict pointer_V)
 
   // Why does this fail?
   Eigen::VectorXd A;
-  //igl::doublearea(V, F, A);
-  doublearea(V, F, A);
+  igl::doublearea(V, F, A);
+  //doublearea(V, F, A);
   return 0.5*A.sum();
 }
 
