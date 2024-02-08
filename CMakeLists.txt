@@ -1,8 +1,7 @@
-# use modern cmake
+cmake_minimum_required(VERSION 3.16)
 project(example)
-cmake_minimum_required(VERSION 3.0)
 
-# if LLVM_DIR is unset
+if(NOT DEFINED LLVM_DIR AND APPLE)
   # Use CMake script to find brew llvm's prefix
   execute_process(COMMAND brew --prefix llvm OUTPUT_VARIABLE BREW_LLVM_PREFIX OUTPUT_STRIP_TRAILING_WHITESPACE)
   # Assuming LLVM is installed via brew, construct the likely path
@@ -46,6 +45,7 @@ message(STATUS "ENZYME_PLUGIN_FLAG: ${ENZYME_PLUGIN_FLAG}")
 # add to CMAKE_CXX_FLAGS
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${ENZYME_PLUGIN_FLAG}")
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${ENZYME_PLUGIN_FLAG}")
+
 
 
 # add the executable
