@@ -21,8 +21,80 @@ extern "C" {
 #include <igl/read_triangle_mesh.h>
 #include <cstdio>
 
+
+template <typename DerivedV, typename DerivedF, typename DeriveddblA>
+IGL_INLINE void doublearea(
+  const Eigen::MatrixBase<DerivedV> & V,
+  const Eigen::MatrixBase<DerivedF> & F,
+  Eigen::PlainObjectBase<DeriveddblA> & dblA);
+
+template <typename DerivedV, typename DerivedF, typename DeriveddblA>
+IGL_INLINE void doublearea(
+  const Eigen::MatrixBase<DerivedV> & V,
+  const Eigen::MatrixBase<DerivedF> & F,
+  Eigen::PlainObjectBase<DeriveddblA> & dblA)
+{
+  // quads are handled by a specialized function
+  if (F.cols() == 4) return igl::doublearea_quad(V,F,dblA);
+
+  const int dim = V.cols();
+  // Only support triangles
+  assert(F.cols() == 3);
+  const size_t m = F.rows();
+  // Compute edge lengths
+  Eigen::Matrix<typename DerivedV::Scalar, Eigen::Dynamic, 3> l;
+
+  // Projected area helper
+  const auto & proj_doublearea =
+    [&V,&F](const int x, const int y, const int f)
+    ->typename DerivedV::Scalar
+  {
+    auto rx = V(F(f,0),x)-V(F(f,2),x);
+    auto sx = V(F(f,1),x)-V(F(f,2),x);
+    auto ry = V(F(f,0),y)-V(F(f,2),y);
+    auto sy = V(F(f,1),y)-V(F(f,2),y);
+    return rx*sy - ry*sx;
+  };
+
+  switch(dim)
+  {
+    case 3:
+    {
+      dblA = DeriveddblA::Zero(m,1);
+      for(size_t f = 0;f<m;f++)
+      {
+        for(int d = 0;d<3;d++)
+        {
+          const auto dblAd = proj_doublearea(d,(d+1)%3,f);
+          dblA(f) += dblAd*dblAd;
+        }
+      }
+      dblA = dblA.array().sqrt().eval();
+      break;
+    }
+    // Uncommenting this causes the autodiff to fail
+    //case 2:
+    //{
+    //  dblA.resize(m,1);
+    //  for(size_t f = 0;f<m;f++)
+    //  {
+    //    dblA(f) = proj_doublearea(0,1,f);
+    //  }
+    //  break;
+    //}
+
+    // Uncommenting this causes the autodiff to fail
+    //default:
+    //{
+    //  igl::edge_lengths(V,F,l);
+    //  return doublearea(l,0.,dblA);
+    //}
+  }
+}
+
 // global for now because I'm not sure what enzyme will do with ints
 Eigen::MatrixXi F;
+
 
 
 __attribute__((noinline))
@@ -32,15 +104,10 @@ static double total_surface_area( const Eigen::MatrixXd * __restrict pointer_V)
   const auto & V = *pointer_V;
 
   // Why does this fail?
+  Eigen::VectorXd A;
   //igl::doublearea(V, F, A);
-  //return 0.5*A.sum();
-  
-  double A = 0;
-  for(int f = 0;f<F.rows();f++)
-  {
-    A += 0.5 * (V.row(F(f,1))-V.row(F(f,0))).head<3>().cross((V.row(F(f,2))-V.row(F(f,0))).head<3>()).norm();
-  }
-  return A;
+  doublearea(V, F, A);
+  return 0.5*A.sum();
 }
 
 int main(int argc, char *argv[])
