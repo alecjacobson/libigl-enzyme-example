@@ -4,6 +4,8 @@ project(example)
 list(PREPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake)
 
 # Libigl
+# add definition IGL_PARALLEL_FOR_FORCE_SERIAL
+add_definitions(-DIGL_PARALLEL_FOR_FORCE_SERIAL)
 include(libigl)
 # Enable the target igl::glfw
 igl_include(glfw)
