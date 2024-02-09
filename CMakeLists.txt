@@ -34,6 +34,9 @@ find_package(LLVM REQUIRED CONFIG)
 set(CMAKE_CXX_COMPILER "${LLVM_INSTALL_PREFIX}/bin/clang++")
 set(CMAKE_C_COMPILER "${LLVM_INSTALL_PREFIX}/bin/clang")
 
+# Not currently working to build local version
+#include(Enzyme)
+
 if(NOT DEFINED ENZYME_DIR AND APPLE)
   # Use CMake script to find brew enzyme's prefix
   execute_process(COMMAND brew --prefix enzyme OUTPUT_VARIABLE BREW_ENZYME_PREFIX OUTPUT_STRIP_TRAILING_WHITESPACE)
