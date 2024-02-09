@@ -1,4 +1,4 @@
-# libigl 🤝 enzyme
+# libigl 🤝 [enzyme](https://github.com/EnzymeAD/Enzyme)
 
 ## Build
 
